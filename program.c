@@ -1,149 +1,148 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#define TAM 100
+#define SIZE 100
 
-typedef struct no{
-  int numero;
-  char nome[TAM];
-  struct no *nseg;
-  struct no *nant;
-} No;
+typedef struct node{
+  int number;
+  char name[SIZE];
+  struct node *nextNode;
+  struct node *prevNode;
+} Node;
 
-No* insereNaLista(No *lista, No *novoNo){
-  No *cabeca = lista;
-  No *auxiliar;
-  //caso a lista esteja vazia ainda
-  if (lista == NULL) return novoNo;
-  //caso o primeiro elemento seja maior 
-  //que o que vamos inserir
-  if (lista->numero > novoNo->numero){
-    novoNo->nseg = lista;
-    lista->nant = novoNo;
-    return novoNo;
+Node* insertIntoList(Node *list, Node *newNode){
+  Node *head = list;
+  Node *assist;
+  //if the list is empty
+  if (list == NULL) return newNode;
+  //if the first element is bigger than the one we will insert
+  if (list->number > newNode->number){
+    newNode->nextNode = list;
+    list->prevNode = newNode;
+    return newNode;
   }
-  while (lista != NULL){
-    auxiliar = lista;
-    lista = lista->nseg;
-    //inserir no fim da lista
-    if (auxiliar->nseg == NULL){
-      auxiliar->nseg = novoNo;
-      novoNo->nant = auxiliar;
-      return cabeca; //retorna a cabeça
+  while (list != NULL){
+    assist = list;
+    list = list->nextNode;
+    //insert node at the end
+    if (assist->nextNode == NULL){
+      assist->nextNode = newNode;
+      newNode->prevNode = assist;
+      return head; //return head
     }
-    //inserir no meio da lista
-    if (lista->numero >= novoNo->numero){
-      auxiliar->nseg = novoNo;
-      novoNo->nseg = lista;
-      lista->nant = novoNo;
-      novoNo->nant = auxiliar;
-      return cabeca;
+    //insert node in the middle
+    if (list->number >= newNode->number){
+      assist->nextNode = newNode;
+      newNode->nextNode = list;
+      list->prevNode = newNode;
+      newNode->prevNode = assist;
+      return head;
     }
   }
-  return cabeca;
+  return head;
 }
 
-No* removeDaLista(int numero, No *lista){
-  No *cabeca = lista;
-  No *auxiliar,*auxiliar2;
-  //lista vazia
-  if (lista == NULL) return lista;
-  //caso seja o primeiro a remover
-  if (lista->numero == numero){
-    cabeca = lista->nseg;
-    free (lista);
-    //unico elemento
-    if (cabeca == NULL) return cabeca;
-    cabeca->nant = NULL;
-    return cabeca;
+Node* removeFromList(int number, Node *list){
+  Node *head = list;
+  Node *assist,*auxiliar2;
+  //empty list
+  if (list == NULL) return list;
+  //if the element to remove is the first one
+  if (list->number == number){
+    head = list->nextNode;
+    free (list);
+    //single element
+    if (head == NULL) return head;
+    head->prevNode = NULL;
+    return head;
   }
-  while (lista != NULL){
-    auxiliar = lista;
-    lista = lista->nseg;
-    //remove o ultimo elemento
-    if (auxiliar->nseg == NULL){
-      auxiliar2 = auxiliar->nant;
-      auxiliar2->nseg = NULL;
-      free (auxiliar);
-      return cabeca; 
+  while (list != NULL){
+    assist = list;
+    list = list->nextNode;
+    //remove last node
+    if (assist->nextNode == NULL){
+      auxiliar2 = assist->prevNode;
+      auxiliar2->nextNode = NULL;
+      free (assist);
+      return head;
     }
-    //remove no meio da lista
-    if (auxiliar->numero == numero){
-      auxiliar2 = auxiliar->nant;
-      auxiliar2->nseg = auxiliar->nseg;
-      lista->nant = auxiliar2;
-      free(auxiliar);
-      return cabeca;
+    //remove node in the middle
+    if (assist->number == number){
+      auxiliar2 = assist->prevNode;
+      auxiliar2->nextNode = assist->nextNode;
+      list->prevNode = auxiliar2;
+      free(assist);
+      return head;
     }
   }
-  return cabeca;
+  return head;
 }
 
-No* criaNo(char *nome, int numero, No *lista){
-  No *novoNo;
-  novoNo = malloc(sizeof(No));
-  novoNo->nseg = NULL;
-  novoNo->nant = NULL;
-  novoNo->numero = numero;
-  strncpy(novoNo->nome,nome,TAM);
-  lista = insereNaLista(lista, novoNo);
-  return lista;
+Node* createNode(char *name, int number, Node *list){
+  Node *newNode;
+  newNode = malloc(sizeof(Node));
+  newNode->nextNode = NULL;
+  newNode->prevNode = NULL;
+  newNode->number = number;
+  strncpy(newNode->name,name,SIZE);
+  list = insertIntoList(list, newNode);
+  return list;
 }
 
-void imprimeLista(No *lista){
-  No *auxiliar = NULL;
-  if (lista == NULL) {
-    printf("A lista esta vazia!\n");
+void printList(Node *list){
+  Node *assist = NULL;
+  if (list == NULL) {
+    printf("The list is empty!\n");
     return;
   }
-  printf("\nAscendente:\n");
-  while (lista != NULL){
-    printf("%6d\t",lista->numero);
-    puts(lista->nome);
-    auxiliar = lista;
-    lista = lista->nseg;
+  printf("\nAscendant:\n");
+  while (list != NULL){
+    printf("%6d\t",list->number);
+    puts(list->name);
+    assist = list;
+    list = list->nextNode;
   }
-  lista = auxiliar;
-  printf("\nDescendente:\n");
-  while (lista != NULL){
-    printf("%6d\t%s\n",lista->numero, lista->nome);
-    lista = lista->nant;
+  list = assist;
+  printf("\nDescendant:\n");
+  while (list != NULL){
+    printf("%6d\t%s\n",list->number, list->name);
+    list = list->prevNode;
   }
 }
 
 int main(void){
   int menu = 1;
-  int numeroAluno;
-  char nome[TAM];
-  No *lista = NULL;
-  No *aux = NULL;
+  int studentNumber;
+  char name[SIZE];
+  Node *list = NULL;
+  Node *aux = NULL;
 
   while (menu != 0){
-    printf("1 - Inserir Aluno\n");
-    printf("2 - Remover Aluno\n");
-    printf("3 - Mostrar Lista Dos Alunos\n");
-    printf("4 - Sair\n");
+    printf("1 - Insert Student\n");
+    printf("2 - Remove Student\n");
+    printf("3 - Show student list\n");
+    printf("4 - Exit\n");
     scanf("%d",&menu);
 
     switch(menu){
       case 1:
-        printf("Nome: ");
+        printf("Name: ");
         scanf("\n");
-        scanf("%99[^\n]",nome);
-        printf("Numero: ");
-        scanf("%d",&numeroAluno);
+        scanf("%99[^\n]",name);
+        printf("Number: ");
+        scanf("%d",&studentNumber);
         printf("\n");
-        lista = criaNo(nome, numeroAluno,lista);
+        list = createNode(name, studentNumber,list);
       break;
 
       case 2:
-        printf("Numero do aluno a remover: \n");
-        scanf("%d",&numeroAluno);
-        lista = removeDaLista(numeroAluno, lista);
+        printf("Remove student with number: \n");
+        scanf("%d",&studentNumber);
+        list = removeFromList(studentNumber, list);
       break;
 
       case 3:
-        imprimeLista(lista);
+        printList(list);
       break;
 
       case 4:
@@ -155,9 +154,9 @@ int main(void){
     }
   }
 
-  while (lista != NULL){
-    aux = lista;
-    lista = lista->nseg;
+  while (list != NULL){
+    aux = list;
+    list = list->nextNode;
     free(aux);
   }
 
